@@ -16,5 +16,5 @@ function draw(error, data1, data2, data3) {
   if (error) throw error;
 
   //Test different data at the end!
-  pc = new PC(data1);
+  pc = new PC(data3);
 }

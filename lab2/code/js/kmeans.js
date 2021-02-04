@@ -7,8 +7,7 @@
 function kmeans(data, k) {
   //Crap we need
   let iterations = 0;
-  const maxLoops = 10;
-  let qualityChange = 0;
+  const maxLoops = 100;
   let oldqualitycheck = 0;
   let qualitycheck = 0;
   //   let converge = false;
@@ -17,31 +16,41 @@ function kmeans(data, k) {
   let new_array = parseData(data);
 
   //Task 4.1 - Select random k centroids
-  let centroid = initCentroids(new_array, k);
-  console.log(centroid);
+  let initialCentroid = initCentroids(new_array, k);
 
   // //Prepare the array for different cluster indices
-  // let clusterIndexPerPoint = new Array(new_array.length).fill(0);
+  let clusterIndexPerPoint = new Array(new_array.length).fill(0);
 
   //Task 4.2 - Assign each point to the closest mean.
-  let clusterIndexPerPoint = assignPointsToMeans(new_array, centroid);
+  clusterIndexPerPoint = assignPointsToMeans(new_array, initialCentroid);
 
   //Master loop -- Loop until quality is good
   while (iterations <= maxLoops) {
     //Task 4.3 - Compute mean of each cluster
-    centroid = computeClusterMeans(new_array, clusterIndexPerPoint, k);
+    let centroid = computeClusterMeans(new_array, clusterIndexPerPoint, k);
+
     // assign each point to the closest mean.
     clusterIndexPerPoint = assignPointsToMeans(new_array, centroid);
 
     //Task 4.4 - Do a quality check for current result
     oldqualitycheck = qualitycheck;
     qualitycheck = qualityCheck(centroid, new_array, clusterIndexPerPoint);
-    qualityChange = qualitycheck - oldqualitycheck;
+    const qualityChange = qualitycheck - oldqualitycheck;
+    const qualityChangePercentage = qualityChange / oldqualitycheck;
 
     //End the loop if...
-    if (qualityChange <= 0) break;
+    // if (Math.abs(qualityChange) < 0.000000001) break;
+    if (
+      Math.abs(qualityChange) < Number.EPSILON ||
+      (oldqualitycheck > 0 &&
+        qualityChange < 0 &&
+        qualityChangePercentage > -0.0001 &&
+        Math.abs(qualityChangePercentage) < Number.EPSILON)
+    )
+      break;
 
     ++iterations;
+    console.log(`${iterations} iterations`);
   }
 
   //Return results
@@ -59,32 +68,9 @@ function kmeans(data, k) {
  * @return {array}
  */
 function parseData(data) {
-  return data.map((point) => {
-    parsed = {};
-
-    for (const key in point) {
-      parsed[key] = Number.parseFloat(point[key]);
-    }
-
-    return parsed;
-  });
-}
-
-function findMinMax(data) {
-  let maxObj = Object.assign({}, data[0]);
-  let minObj = Object.assign({}, data[0]);
-
-  for (const point of data) {
-    for (const key in point) {
-      maxObj[key] = Math.max(maxObj[key], point[key]);
-      minObj[key] = Math.min(minObj[key], point[key]);
-    }
-  }
-
-  return [
-    Math.max(...Object.values(maxObj)),
-    Math.min(...Object.values(minObj)),
-  ];
+  return data.map((point) =>
+    Object.values(point).map((strValue) => Number.parseFloat(strValue))
+  );
 }
 
 /**
@@ -94,19 +80,10 @@ function findMinMax(data) {
  */
 
 function initCentroids(data, k) {
-  // Find max and min
-  const [max, min] = findMinMax(data);
-
   //Create k centroids
-  return [...Array(k).keys()].map(() => {
-    centroid = {};
-
-    for (const key in data[0]) {
-      centroid[key] = Math.random() * (max - min) + min;
-    }
-
-    return centroid;
-  });
+  return [...Array(k).keys()].map(
+    () => data[Math.floor(Math.random() * data.length)]
+  );
 }
 
 /**
@@ -142,11 +119,7 @@ function findClosestMeanIndex(point, means) {
  * @return {Number}
  */
 function euclideanDistance(point1, point2) {
-  if (
-    point1 !== undefined ||
-    point2 !== undefined ||
-    point1.length != point2.length
-  )
+  if (point1.length != point2.length)
     throw "point1 and point2 must be of same dimension";
 
   return Math.sqrt(
@@ -177,31 +150,29 @@ function findIndexOfMinimum(array) {
  * @returns {array}
  */
 function computeClusterMeans(points, assignments, k) {
-  console.log(points);
-  if (
-    points !== undefined ||
-    assignments !== undefined ||
-    points.length != assignments.length
-  )
+  if (points.length != assignments.length)
     throw "points and assignments arrays must be of same dimension";
 
-  return [...Array(k).keys()].map((clusterIdx) => {
-    let clusterPoints = [],
-      centroid;
+  let newMeans = [];
+
+  for (let clusterIdx = 0; clusterIdx < k; ++clusterIdx) {
+    let clusterPoints = [];
 
     for (const [pointIdx, assignedClusterIdx] of Object.entries(assignments)) {
-      if (assignedClusterIdx == clusterIdx) {
-        // fill array
+      if (assignedClusterIdx === clusterIdx) {
+        // Fill array
         clusterPoints.push(points[pointIdx]);
       }
     }
 
     if (Array.isArray(clusterPoints) && clusterPoints.length !== 0) {
-      centroid = averagePosition(clusterPoints);
+      newMeans.push(averagePosition(clusterPoints));
+    } else {
+      newMeans.push(points[Math.floor(Math.random() * points.length)]);
     }
+  }
 
-    return centroid;
-  });
+  return newMeans;
 }
 
 /**
@@ -213,10 +184,18 @@ function computeClusterMeans(points, assignments, k) {
  * @param {*} clusterIndexPerPoint
  */
 function qualityCheck(centroid, new_array, clusterIndexPerPoint) {
-  console.log(new_array);
-  // centroid.forEach((centroidIdx)=>{
+  let qualitycheck = 0;
 
-  // });
+  for (const [clusterIdx, clusterMean] of Object.entries(centroid)) {
+    for (const [pointIdx, point] of Object.entries(new_array)) {
+      if (clusterIdx == clusterIndexPerPoint[pointIdx]) {
+        Object.keys(point).forEach(() => {
+          qualitycheck += euclideanDistance(point, clusterMean);
+        });
+      }
+    }
+  }
+
   return qualitycheck;
 }
 

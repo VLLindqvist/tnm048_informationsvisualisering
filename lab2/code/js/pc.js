@@ -61,7 +61,7 @@ function PC(data) {
   /**
    * Call the kmeans algorithm
    */
-  let nr_clusters = 4;
+  let nr_clusters = 2;
   let kmeansResults = kmeans(data, nr_clusters);
 
   //Plot the results from kmeans
