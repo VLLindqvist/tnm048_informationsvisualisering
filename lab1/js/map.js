@@ -10,22 +10,25 @@ function worldMap(data) {
   /**
    * Task 14 - Create a leaflet map and put center to 10,15 with zoom scale of 1
    */
-  var leaflet_map = L.map("mapid").setView([10, 15], 1);
+  var leaflet_map = L.map('mapid').setView([10, 15], 1);
 
   /**
    * Task 15 - Get the tileLayer from the link at the bottom of this file
    * and add it to the map created above.
    */
-  var mapLink = L.tileLayer(map_link()).addTo(leaflet_map);
+  L.tileLayer(map_link()).addTo(leaflet_map);
+  L.geoJson(
+    'https://openlayers.org/en/v4.6.5/examples/data/geojson/countries.geojson',
+  ).addTo(leaflet_map);
 
   /**
    * Task 16 - Create an svg call on top of the leaflet map.
    * Also append a g tag on this svg tag and add class leaflet-zoom-hide.
    * This g tag will be needed later.
    */
-  var svg_map = d3.select(leaflet_map.getPanes().overlayPane).append("svg");
+  var svg_map = d3.select(leaflet_map.getPanes().overlayPane).append('svg');
 
-  var g = svg_map.append("g").attr("class", "leaflet-zoom-hide");
+  var g = svg_map.append('g').attr('class', 'leaflet-zoom-hide');
 
   /**
    * Task 17 - Create a function that projects lat/lng points on the map.
@@ -66,12 +69,12 @@ function worldMap(data) {
    */
   //features for the points
   var feature = g
-    .selectAll("circle")
+    .selectAll('circle')
     .data(data.features)
     .enter()
-    .append("circle")
-    .attr("class", "mapcircle")
-    .style("opacity", 0.9);
+    .append('circle')
+    .attr('class', 'mapcircle')
+    .style('opacity', 0.9);
 
   /**
    * Task 20 - Call the plot function with feature variable
@@ -82,7 +85,7 @@ function worldMap(data) {
 
   //Redraw the dots each time we interact with the map
   //Remove comment tags when done with task 20
-  leaflet_map.on("moveend", reset);
+  leaflet_map.on('moveend', reset);
   reset();
 
   //Mouseover
@@ -92,8 +95,8 @@ function worldMap(data) {
 
   //Mouse over function
   function mouseOver(feature) {
-    feature.on("mouseover", function (d) {
-      selection = d3.select(this).attr("r", 15);
+    feature.on('mouseover', function (d) {
+      selection = d3.select(this).attr('r', 15);
       //Update the tooltip position and value
       points.tooltip(d);
 
@@ -104,11 +107,11 @@ function worldMap(data) {
 
   //Mouse out function
   function mouseOut(feature) {
-    feature.on("mouseout", function () {
+    feature.on('mouseout', function () {
       d3.select(this)
         .transition()
         .duration(500)
-        .attr("r", function (d) {
+        .attr('r', function (d) {
           if (d.properties.DEATHS == null) {
             return 3;
           } else {
@@ -126,20 +129,20 @@ function worldMap(data) {
 
     // Setting the size and location of the overall SVG container
     svg_map
-      .attr("width", bottomRight[0] - topLeft[0])
-      .attr("height", bottomRight[1] - topLeft[1])
-      .style("left", topLeft[0] + "px")
-      .style("top", topLeft[1] + "px");
+      .attr('width', bottomRight[0] - topLeft[0])
+      .attr('height', bottomRight[1] - topLeft[1])
+      .style('left', topLeft[0] + 'px')
+      .style('top', topLeft[1] + 'px');
 
-    g.attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")");
+    g.attr('transform', 'translate(' + -topLeft[0] + ',' + -topLeft[1] + ')');
 
-    feature.attr("transform", function (d) {
+    feature.attr('transform', function (d) {
       return (
-        "translate(" +
+        'translate(' +
         applyLatLngToLayer(d).x +
-        "," +
+        ',' +
         applyLatLngToLayer(d).y +
-        ")"
+        ')'
       );
     });
   }
@@ -151,24 +154,24 @@ function worldMap(data) {
    */
   this.change_map_points = function (curr_view_erth) {
     map_points_change = d3
-      .selectAll(".mapcircle")
+      .selectAll('.mapcircle')
       .filter(function (d) {
         return curr_view_erth.indexOf(d.id) != -1;
       })
-      .attr("r", 7)
+      .attr('r', 7)
       .transition()
       .duration(800);
 
     //Call plot funtion.
     points.plot(map_points_change);
 
-    d3.selectAll(".mapcircle")
+    d3.selectAll('.mapcircle')
       .filter(function (d) {
         return curr_view_erth.indexOf(d.id) == -1;
       })
       .transition()
       .duration(800)
-      .attr("r", 0);
+      .attr('r', 0);
   };
 
   //<---------------------------------------------------------------------------------------------------->
@@ -177,13 +180,16 @@ function worldMap(data) {
    * Function for hovering the points, implement if time allows.
    */
   this.hovered = function (input_point) {
-    console.log("If time allows you, implement something here!");
+    console.log('If time allows you, implement something here!');
   };
 
   //<---------------------------------------------------------------------------------------------------->
 
   //Link to get the leaflet map
   function map_link() {
-    return "https://api.mapbox.com/styles/v1/josecoto/civ8gwgk3000a2ipdgnsscnai/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1Ijoiam9zZWNvdG8iLCJhIjoiY2l2OGZxZWNuMDAxODJ6cGdhcGFuN2IyaCJ9.7szLs0lc_2EjX6g21HI_Kg";
+    return 'https://api.mapbox.com/styles/v1/victorlindqvist/cklqwo15t7nx017o8yr88im5d/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoidmljdG9ybGluZHF2aXN0IiwiYSI6ImNrbHF2eTRhMTFncmMydnFyZ2g3b2k5MWoifQ.PTW8jmTp7eOvd69e-6TFfw';
+    // return 'https://api.mapbox.com/styles/v1/victorlindqvist/cklqwo15t7nx017o8yr88im5d/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoidmljdG9ybGluZHF2aXN0IiwiYSI6ImNrbHF2eTRhMTFncmMydnFyZ2g3b2k5MWoifQ.PTW8jmTp7eOvd69e-6TFfw';
+    // return 'https://api.mapbox.com/styles/v1/mapbox/dark-v10/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1Ijoiam9zZWNvdG8iLCJhIjoiY2l2OGZxZWNuMDAxODJ6cGdhcGFuN2IyaCJ9.7szLs0lc_2EjX6g21HI_Kg';
+    // return "https://api.mapbox.com/styles/v1/josecoto/civ8gwgk3000a2ipdgnsscnai/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1Ijoiam9zZWNvdG8iLCJhIjoiY2l2OGZxZWNuMDAxODJ6cGdhcGFuN2IyaCJ9.7szLs0lc_2EjX6g21HI_Kg";
   }
 }
