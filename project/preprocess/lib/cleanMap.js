@@ -59,7 +59,7 @@ var cleanMap = function () { return __awaiter(void 0, void 0, void 0, function (
                 return [4 /*yield*/, translate(mapRaw.features[featureIdx].properties.name, {
                         from: "en",
                         to: "sv",
-                        key: "AIzaSyBo7bMJ8iie6gAM1bvcryVhXB9z4Ctew3k",
+                        key: "",
                     })];
             case 2:
                 country = _c.sent();

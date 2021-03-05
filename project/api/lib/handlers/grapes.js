@@ -35,66 +35,21 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getWinesByCountry = exports.getWines = void 0;
+exports.getGrapes = void 0;
 var fs_1 = __importDefault(require("fs"));
 var path_1 = __importDefault(require("path"));
-var getWines = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var wines, newWines, _i, wines_1, wine;
+var getGrapes = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var grapes;
     return __generator(this, function (_a) {
-        wines = JSON.parse(fs_1.default.readFileSync(path_1.default.join(__dirname, "../../wines.json")));
-        if (!wines)
+        grapes = JSON.parse(fs_1.default.readFileSync(path_1.default.join(__dirname, "../../grapes.json")));
+        if (!grapes)
             return [2 /*return*/, res.status(204).end()];
-        newWines = [];
-        for (_i = 0, wines_1 = wines; _i < wines_1.length; _i++) {
-            wine = wines_1[_i];
-            newWines = __spreadArray(__spreadArray([], newWines), [wine]);
-        }
-        if (!newWines)
-            return [2 /*return*/, res.status(204).end()];
-        return [2 /*return*/, res.status(200).json(newWines)];
+        return [2 /*return*/, res.status(200).json(grapes)];
     });
 }); };
-exports.getWines = getWines;
-var getWinesByCountry = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var countryName, countries, current_country, wines, newWines, _i, wines_2, wine, taste;
-    return __generator(this, function (_a) {
-        countryName = req.params.countryName;
-        if (!countryName)
-            return [2 /*return*/, res.status(404).json("Couldn't find country")];
-        countries = JSON.parse(fs_1.default.readFileSync(path_1.default.join(__dirname, "../../countries.json")));
-        if (!(countryName in countries))
-            return [2 /*return*/, res.status(404).json("Couldn't find country")];
-        current_country = countries[countryName];
-        wines = current_country.wines;
-        if (!wines)
-            return [2 /*return*/, res.status(204).end()];
-        newWines = [];
-        for (_i = 0, wines_2 = wines; _i < wines_2.length; _i++) {
-            wine = wines_2[_i];
-            taste = wine.taste;
-            if (taste.bitter +
-                taste.body +
-                taste.fruitAcid +
-                taste.roughness +
-                taste.sweetness +
-                taste.sweetness !==
-                0 &&
-                taste.text &&
-                wine.grapes.length) {
-                newWines = __spreadArray(__spreadArray([], newWines), [wine]);
-            }
-        }
-        return [2 /*return*/, res.status(200).json(newWines)];
-    });
-}); };
-exports.getWinesByCountry = getWinesByCountry;
-//# sourceMappingURL=wines.js.map
+exports.getGrapes = getGrapes;
+//# sourceMappingURL=grapes.js.map

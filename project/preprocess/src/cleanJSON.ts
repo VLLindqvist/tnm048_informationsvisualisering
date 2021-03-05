@@ -7,7 +7,7 @@ import {
   Wines,
   Countries,
   CategoryName,
-} from "../../api/src/types";
+} from "../../src/types";
 
 const cleanJSON = async () => {
   let wines: Wines = [];
@@ -61,62 +61,70 @@ const cleanJSON = async () => {
         Number.parseFloat(wine["tasteRoughness"].split("%")[0]) / 100;
       delete wine["tasteRoughness"];
 
-      const current_grapes = wine["grapes"].split("---");
-      const current_wine = {
-        ...wine,
-        taste: {
-          text: wine["taste"],
-          bitter,
-          sweetness,
-          fruitAcid,
-          body,
-          roughness,
-        },
-        current_grapes,
-      };
+      const current_grapes = wine["grapes"] ? wine["grapes"].split("---") : [];
 
-      const current_category = wine["type"] as CategoryName;
+      if (
+        bitter + body + fruitAcid + roughness + sweetness + sweetness !== 0 &&
+        wine["taste"] &&
+        current_grapes.length &&
+        wine["year"]
+      ) {
+        const current_wine = {
+          ...wine,
+          taste: {
+            text: wine["taste"],
+            bitter,
+            sweetness,
+            fruitAcid,
+            body,
+            roughness,
+          },
+          grapes: current_grapes,
+        };
 
-      if (wine["country"]) {
-        if (wine["country"] in countries) {
-          countries[wine["country"]].wines = [
-            ...(countries[wine["country"]].wines || []),
-            current_wine,
-          ];
-          ++countries[wine["country"]].amountOfWines;
-        } else {
-          countries[wine["country"]] = {
-            id: Math.floor(Math.random() * 100),
-            name: wine["country"],
-            amountOfWines: 1,
-            wines: [current_wine],
-            categories: {
-              "Rött vin": 0,
-              "Vitt vin": 0,
-              "Mousserande vin": 0,
-              Rosévin: 0,
-            },
-          };
-        }
+        const current_category = wine["type"] as CategoryName;
 
-        ++(countries[wine["country"]].categories as Categories)[
-          current_category
-        ];
-      }
-      if (wine["type"]) {
-        ++categories[current_category];
-      }
-      for (const grape of current_grapes) {
-        if (grape) {
-          if (grape in grapes) {
-            ++grapes[grape];
+        if (wine["country"]) {
+          if (wine["country"] in countries) {
+            countries[wine["country"]].wines = [
+              ...(countries[wine["country"]].wines || []),
+              current_wine,
+            ];
+            ++countries[wine["country"]].amountOfWines;
           } else {
-            grapes[grape] = 1;
+            countries[wine["country"]] = {
+              id: Math.floor(Math.random() * 100),
+              name: wine["country"],
+              amountOfWines: 1,
+              wines: [current_wine],
+              categories: {
+                "Rött vin": 0,
+                "Vitt vin": 0,
+                "Mousserande vin": 0,
+                Rosévin: 0,
+              },
+            };
+          }
+
+          ++(countries[wine["country"]].categories as Categories)[
+            current_category
+          ];
+        }
+        if (wine["type"]) {
+          ++categories[current_category];
+        }
+        for (const grape of current_grapes) {
+          if (grape) {
+            if (grape in grapes) {
+              ++grapes[grape];
+            } else {
+              grapes[grape] = 1;
+            }
           }
         }
-      }
 
-      wines = [...wines, current_wine];
+        wines = [...wines, current_wine];
+      }
     }
   }
 

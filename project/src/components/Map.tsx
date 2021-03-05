@@ -5,12 +5,9 @@ import {
   MapContainer,
   TileLayer,
   GeoJSON as GeoJSONComponent,
-  Marker,
-  SVGOverlay,
-  Tooltip,
-  Rectangle,
 } from "react-leaflet";
 import Leaflet from "leaflet";
+import Loader from "./Loader";
 
 import { RootStateOrAny, useDispatch, useSelector } from "react-redux";
 import useSWR from "swr";
@@ -34,9 +31,8 @@ const Map = () => {
     { feature: Feature<Geometry, any>; layer: Layer }[]
   >([]);
 
-  const { data: countries, error: countriesFetchError } = useSWR<Countries>(
-    `/countries`,
-    (url: string) => getFetcher<Countries>(url),
+  const { data: countries } = useSWR<Countries>(`/countries`, (url: string) =>
+    getFetcher<Countries>(url),
   );
 
   useEffect(() => {
@@ -151,7 +147,7 @@ const Map = () => {
     );
   }
 
-  return <div />; // TODO: Spinner
+  return <Loader />; // TODO: Spinner
 };
 
 export default Map;

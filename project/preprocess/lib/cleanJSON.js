@@ -97,54 +97,59 @@ var cleanJSON = function () { return __awaiter(void 0, void 0, void 0, function 
                 delete wine["tasteBody"];
                 roughness = Number.parseFloat(wine["tasteRoughness"].split("%")[0]) / 100;
                 delete wine["tasteRoughness"];
-                current_grapes = wine["grapes"].split("---");
-                current_wine = __assign(__assign({}, wine), { taste: {
-                        text: wine["taste"],
-                        bitter: bitter,
-                        sweetness: sweetness,
-                        fruitAcid: fruitAcid,
-                        body: body,
-                        roughness: roughness,
-                    }, current_grapes: current_grapes });
-                current_category = wine["type"];
-                if (wine["country"]) {
-                    if (wine["country"] in countries) {
-                        countries[wine["country"]].wines = __spreadArray(__spreadArray([], (countries[wine["country"]].wines || [])), [
-                            current_wine,
-                        ]);
-                        ++countries[wine["country"]].amountOfWines;
-                    }
-                    else {
-                        countries[wine["country"]] = {
-                            id: Math.floor(Math.random() * 100),
-                            name: wine["country"],
-                            amountOfWines: 1,
-                            wines: [current_wine],
-                            categories: {
-                                "Rött vin": 0,
-                                "Vitt vin": 0,
-                                "Mousserande vin": 0,
-                                Rosévin: 0,
-                            },
-                        };
-                    }
-                    ++countries[wine["country"]].categories[current_category];
-                }
-                if (wine["type"]) {
-                    ++categories[current_category];
-                }
-                for (_a = 0, current_grapes_1 = current_grapes; _a < current_grapes_1.length; _a++) {
-                    grape = current_grapes_1[_a];
-                    if (grape) {
-                        if (grape in grapes) {
-                            ++grapes[grape];
+                current_grapes = wine["grapes"] ? wine["grapes"].split("---") : [];
+                if (bitter + body + fruitAcid + roughness + sweetness + sweetness !== 0 &&
+                    wine["taste"] &&
+                    current_grapes.length &&
+                    wine["year"]) {
+                    current_wine = __assign(__assign({}, wine), { taste: {
+                            text: wine["taste"],
+                            bitter: bitter,
+                            sweetness: sweetness,
+                            fruitAcid: fruitAcid,
+                            body: body,
+                            roughness: roughness,
+                        }, grapes: current_grapes });
+                    current_category = wine["type"];
+                    if (wine["country"]) {
+                        if (wine["country"] in countries) {
+                            countries[wine["country"]].wines = __spreadArray(__spreadArray([], (countries[wine["country"]].wines || [])), [
+                                current_wine,
+                            ]);
+                            ++countries[wine["country"]].amountOfWines;
                         }
                         else {
-                            grapes[grape] = 1;
+                            countries[wine["country"]] = {
+                                id: Math.floor(Math.random() * 100),
+                                name: wine["country"],
+                                amountOfWines: 1,
+                                wines: [current_wine],
+                                categories: {
+                                    "Rött vin": 0,
+                                    "Vitt vin": 0,
+                                    "Mousserande vin": 0,
+                                    Rosévin: 0,
+                                },
+                            };
+                        }
+                        ++countries[wine["country"]].categories[current_category];
+                    }
+                    if (wine["type"]) {
+                        ++categories[current_category];
+                    }
+                    for (_a = 0, current_grapes_1 = current_grapes; _a < current_grapes_1.length; _a++) {
+                        grape = current_grapes_1[_a];
+                        if (grape) {
+                            if (grape in grapes) {
+                                ++grapes[grape];
+                            }
+                            else {
+                                grapes[grape] = 1;
+                            }
                         }
                     }
+                    wines = __spreadArray(__spreadArray([], wines), [current_wine]);
                 }
-                wines = __spreadArray(__spreadArray([], wines), [current_wine]);
             }
         }
         fs_1.default.writeFileSync(path_1.default.join(__dirname, "../../api/wines.json"), JSON.stringify(wines));

@@ -10,6 +10,7 @@ var minimist_1 = __importDefault(require("minimist"));
 var countries_1 = require("./handlers/countries");
 var categories_1 = require("./handlers/categories");
 var wines_1 = require("./handlers/wines");
+var grapes_1 = require("./handlers/grapes");
 var args = minimist_1.default(process.argv.slice(2));
 var port = args.p || "3000";
 var app = express_1.default();
@@ -22,7 +23,9 @@ app.get("/countries", countries_1.getCountries);
 app.get("/countries/:countryName", countries_1.getCountry);
 app.get("/categories", categories_1.getCategories);
 app.get("/categories/:countryName", categories_1.getCategoriesPerCountry);
+app.get("/grapes", grapes_1.getGrapes);
 app.get("/wines", wines_1.getWines);
+app.get("/wines/:countryName", wines_1.getWinesByCountry);
 app.listen(port, function () {
     console.log("App is listening at http://localhost:" + port);
 });

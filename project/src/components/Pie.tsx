@@ -1,12 +1,16 @@
-import { useEffect, useState } from "react";
-import { ChartComponentProps, Doughnut } from "react-chartjs-2";
-import ChartDataLabels from "chartjs-plugin-datalabels";
-import useSWR from "swr";
-import { Categories } from "../types";
-import { getFetcher } from "../utils/fetchers";
+import { useEffect, useState, FC } from "react";
+import { Doughnut } from "react-chartjs-2";
 import { RootStateOrAny, useSelector } from "react-redux";
+import Chart from "chart.js";
+import * as ChartDataLabels from "chartjs-plugin-datalabels";
+
+import { Categories } from "../types";
 import { makeStyles, Typography } from "@material-ui/core";
 import { countryRedux } from "../redux/country";
+import { colors, hoverColors } from "../utils/constants";
+import Loader from "./Loader";
+
+Chart.plugins.unregister([ChartDataLabels] as any);
 
 const useStyles = makeStyles({
   countryText: {
@@ -17,117 +21,104 @@ const useStyles = makeStyles({
   },
 });
 
-const colors = [
-  "rgba(255, 0, 0, 0.3)",
-  "rgba(249, 232, 192, 0.9)",
-  "rgba(255, 255, 255, 0.9)",
-  "rgba(231, 84, 128, 0.5)",
-];
-const hoverColors = [
-  "rgba(255, 0, 0, 0.5)",
-  "rgba(249, 232, 192, 1)",
-  "rgba(255, 255, 255, 1)",
-  "rgba(231, 84, 128, 0.7)",
-];
-
-const Pie = () => {
+type PieProps = {
+  categories?: Categories;
+};
+const Pie: FC<PieProps> = ({ categories }) => {
   const classes = useStyles();
 
-  const getPercentData = (data: any) => {};
-  const testP = [60, 30, 2, 8];
   const country: countryRedux = useSelector(
     (state: RootStateOrAny) => state.country,
-  );
-  const { data: categories, error: categoriesFetchError } = useSWR<Categories>(
-    `/categories/${country.current.name}`,
-    (url: string) => getFetcher<Categories>(url),
   );
 
   const [labels, setLabels] = useState<string[]>([]);
   const [values, setValues] = useState<number[]>([]);
+  const [actualColors, setActualColors] = useState<string[]>([]);
+  const [actualHoverColors, setActualHoverColors] = useState<string[]>([]);
 
   useEffect(() => {
     if (categories) {
-      setLabels(Object.keys(categories as any));
-      setValues(Object.values(categories as any));
+      const cats = Object.entries(categories)
+        .map(([key, value], index) => ({ key, value, index }))
+        .filter(({ value }) => value > 0);
+
+      const indices = cats.map(({ index }) => index);
+
+      setActualColors(colors.filter((c, i) => indices.includes(i)));
+      setActualHoverColors(hoverColors.filter((c, i) => indices.includes(i)));
+      setLabels(cats.map((c) => c.key));
+      setValues(cats.map((c) => c.value));
     }
   }, [categories]);
 
   if (categories) {
-    const data = {
-      // maintainAspectRatio: false,
-      responsive: true,
-      labels: labels,
-      text: country,
-      datasets: [
-        {
-          data: values,
-          backgroundColor: colors,
-          hoverBackgroundColor: hoverColors,
-        },
-      ],
-    };
-
-    const options: ChartComponentProps["options"] = {
-      // maintainAspectRatio: false,
-      cutoutPercentage: 30,
-      legend: {
-        labels: {
-          boxWidth: 15,
-          fontColor: "rgba(255, 255, 255, 1)",
-        },
-        display: true,
-        position: "bottom",
-      },
-      plugins: {
-        datalabels: {
-          formatter: (value: any, ctx: any) => {
-            let sum = 0;
-            let dataArr = ctx.chart.data.datasets[0].data;
-            console.log(dataArr);
-            for (const data of dataArr) {
-              sum += data;
-            }
-            let percentage = ((value * 100) / sum).toFixed(2) + "%";
-            return percentage;
-          },
-          color: "#fff",
-        },
-      },
-      tooltips: {
-        enabled: true,
-        callbacks: {
-          label: (tooltipItem: any, data: any) => {
-            let dataset = data.datasets[tooltipItem.datasetIndex];
-            var meta = dataset._meta[Object.keys(dataset._meta)[0]];
-            var total = meta.total;
-            var currentValue = dataset.data[tooltipItem.index];
-            var percentage = parseFloat(
-              ((currentValue / total) * 100).toFixed(1),
-            );
-            return currentValue + " (" + percentage + "%)";
-          },
-        },
-      },
-    };
-
     return (
       <div className={classes.dountCanvas}>
-        <h1 className={classes.countryText}>
+        <Typography variant="h3" className={classes.countryText}>
           {country.current.name || "Alla Länder"}
-        </h1>
+        </Typography>
         <Doughnut
-          width={window.innerWidth * 0.25}
+          width={window.innerWidth * 0.2}
           height={window.innerHeight * 0.25}
-          type={Doughnut}
-          data={data}
-          options={options}
+          plugins={[ChartDataLabels]}
+          data={{
+            labels: labels,
+            datasets: [
+              {
+                data: values,
+                backgroundColor: actualColors,
+                hoverBackgroundColor: actualHoverColors,
+              },
+            ],
+          }}
+          options={{
+            aspectRatio: 1,
+            cutoutPercentage: 30,
+            legend: {
+              labels: {
+                boxWidth: 15,
+                fontColor: "rgba(255, 255, 255, 1)",
+              },
+              display: true,
+              position: "bottom",
+            },
+            plugins: {
+              datalabels: {
+                formatter: (value: any, ctx: any) => {
+                  let sum = 0;
+                  let dataArr = ctx.chart.data.datasets[0].data;
+                  for (const data of dataArr) {
+                    sum += data;
+                  }
+                  let percentage = (value * 100) / sum;
+
+                  return percentage ? percentage.toFixed(2) + "%" : "";
+                },
+                color: "#000",
+              },
+            },
+            tooltips: {
+              enabled: true,
+              callbacks: {
+                label: (tooltipItem: any, data: any) => {
+                  let dataset = data.datasets[tooltipItem.datasetIndex];
+                  var meta = dataset._meta[Object.keys(dataset._meta)[0]];
+                  var total = meta.total;
+                  var currentValue = dataset.data[tooltipItem.index];
+                  var percentage = parseFloat(
+                    ((currentValue / total) * 100).toFixed(1),
+                  );
+                  return currentValue + " (" + percentage + "%)";
+                },
+              },
+            },
+          }}
         />
       </div>
     );
   }
 
-  return <div />; // spinner
+  return <Loader />;
 };
 
 export default Pie;

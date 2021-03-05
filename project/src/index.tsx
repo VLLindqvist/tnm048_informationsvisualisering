@@ -5,11 +5,11 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import StoreWithProvider from "./redux";
 
+/* <React.StrictMode>  */
+
 ReactDOM.render(
   <StoreWithProvider>
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
+    <App />
   </StoreWithProvider>,
   document.getElementById("root"),
 );
