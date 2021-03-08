@@ -30,7 +30,9 @@ const Pie: FC<PieProps> = ({ categories }) => {
   const country: countryRedux = useSelector(
     (state: RootStateOrAny) => state.country,
   );
+  const [total, setTotal] = useState<number>(0);
 
+  
   const [labels, setLabels] = useState<string[]>([]);
   const [values, setValues] = useState<number[]>([]);
   const [actualColors, setActualColors] = useState<string[]>([]);
@@ -38,6 +40,7 @@ const Pie: FC<PieProps> = ({ categories }) => {
 
   useEffect(() => {
     if (categories) {
+      setTotal( categories["Mousserande vin"] + categories["Rosévin"]  + categories["Rött vin"] + categories["Vitt vin"]);
       const cats = Object.entries(categories)
         .map(([key, value], index) => ({ key, value, index }))
         .filter(({ value }) => value > 0);
@@ -56,6 +59,9 @@ const Pie: FC<PieProps> = ({ categories }) => {
       <div className={classes.dountCanvas}>
         <Typography variant="h3" className={classes.countryText}>
           {country.current.name || "Alla Länder"}
+        </Typography>
+        <Typography variant="h6" className={classes.countryText}>
+          {`Totalt: ${total} st`} 
         </Typography>
         <Doughnut
           width={window.innerWidth * 0.2}
